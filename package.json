@@ -1,0 +1,29 @@
+{
+  "name": "simply-book-it-slot-finder",
+  "version": "1.0.0",
+  "description": "Simple script to find a free time slot at simly booking",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf ./build && tsc",
+    "start": "npm run build && node build/index.js",
+    "start:dev": "npx nodemon"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "nodemon": "^3.1.0",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^0.37.0",
+    "axios": "^1.6.8",
+    "cron-parser": "^4.9.0",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.65.1"
+  }
+}
