@@ -1,97 +1,87 @@
-import { timeSlot } from "./types";
+/**
+ * Simply Book It Slot Finder
+ * Main entry point for the application
+ */
+import cron from 'node-cron';
+import { config } from './config';
+import { BookingService } from './services/bookingService';
+import { NotificationService } from './services/notificationService';
 
-const cron = require("node-cron");
-const axios = require('axios');
-const TelegramBot = require('node-telegram-bot-api');
-require('@dotenvx/dotenvx').config()
+// Load environment variables
+require('@dotenvx/dotenvx').config();
 
-function init() {
+class SlotFinderApp {
+  private bookingService: BookingService;
+  private notificationService: NotificationService;
+
+  constructor() {
+    this.bookingService = new BookingService();
+    this.notificationService = new NotificationService();
+  }
+
+  /**
+   * Initializes and starts the application
+   */
+  async start(): Promise<void> {
     try {
-        // ┌────────────── second (optional)
-        // │ ┌──────────── minute
-        // │ │ ┌────────── hour
-        // │ │ │ ┌──────── day of month
-        // │ │ │ │ ┌────── month
-        // │ │ │ │ │ ┌──── day of week
-        // │ │ │ │ │ │
-        // │ │ │ │ │ │
-        // * * * * * *
-        const schedule = process.env.SCHEDULE || "*/30 * * * *";
-        if (process.env.NODE_ENV !== "PRODUCTION") {
-            // run immediately for development tests
-            run();
-        } else {
-            cron.schedule(schedule, async () => {
-                run();
-            });
-        }
+      console.log('='.repeat(60));
+      console.log('Simply Book It Slot Finder');
+      console.log('='.repeat(60));
+      console.log(`Environment: ${config.nodeEnv}`);
+      console.log(`Schedule: ${config.schedule}`);
+      console.log(`Checking: ${config.bookItHost}`);
+      console.log(`Days ahead: ${config.daysAhead}`);
+      console.log(`Provider: ${config.provider}, Service: ${config.service}`);
+      console.log('='.repeat(60));
+
+      if (config.nodeEnv !== 'PRODUCTION') {
+        console.log('\n🔍 Running in development mode - executing immediately...\n');
+        await this.run();
+      } else {
+        console.log(`\n⏱️  Running in production mode - scheduled: ${config.schedule}\n`);
+        cron.schedule(config.schedule, async () => {
+          await this.run();
+        });
+        console.log('✅ Scheduler started successfully. Waiting for next run...\n');
+      }
     } catch (error) {
-        console.error(error);
+      console.error('❌ Failed to start application:', error);
+      process.exit(1);
     }
-}
+  }
 
+  /**
+   * Main execution logic - checks for available slots and sends notifications
+   */
+  private async run(): Promise<void> {
+    const timestamp = new Date().toISOString();
+    console.log(`\n${'─'.repeat(60)}`);
+    console.log(`🔍 Starting slot check at: ${timestamp}`);
+    console.log(`${'─'.repeat(60)}`);
 
-async function run() {
-    console.log(`Start new run at: ${new Date().toISOString()}`);
     try {
-        const daysAhead = parseInt(process.env.DAYSAHEAD || "28");
-        const host = process.env.BOOKITHOST || "";
-        if (host === "") throw new Error("Missing environment variable BOOKITHOST.");
-        const url = `${host}/v2/booking/time-slots/?from=${new Date().toISOString().slice(0, 10)}
-&to=${futureDate(daysAhead)}
-&location=
-&category=
-&provider=2
-&service=2
-&count=1
-&booking_id=`;
+      const availableSlots = await this.bookingService.getAvailableSlots();
 
-        const { data } = await axios.get(url);
-        const timeSlots: Array<timeSlot> = data;
-        const freeSlots = timeSlots.filter((e) => e.type !== "busy");
-        if (freeSlots.length > 0) {
-            sendTelegramMessage(freeSlots.slice(0, 1));
-        }
+      if (availableSlots.length > 0) {
+        console.log(`✅ Found ${availableSlots.length} available slot(s)!`);
+        
+        // Send notification about available slots
+        await this.notificationService.sendNotification(availableSlots);
+      } else {
+        console.log('ℹ️  No available slots found.');
+      }
 
+      console.log(`${'─'.repeat(60)}\n`);
     } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error(`Unknown error from Axios: ${JSON.stringify(error)}`);
-        } else {
-            console.error(`Unknown error while fetch data: ${JSON.stringify(error)}`);
-        }
+      console.error('❌ Error during slot check:', error);
+      console.log(`${'─'.repeat(60)}\n`);
     }
+  }
 }
 
-function sendTelegramMessage(slots: Array<timeSlot>) {
-    const token = process.env.TELEGRAM_TOKEN;
-    if (token === undefined) {
-        console.log('Missing Telegram Token to send message.')
-        return;
-    }
-    const chatId = process.env.TELEGRAM_CHATID;
-    if (chatId === undefined) {
-        console.log('Missing Telegram chat id to send message.')
-        return;
-    }
-
-    // Create a bot that uses 'polling' to fetch new updates
-    const bot = new TelegramBot(token, { polling: false });
-    let message = '';
-    if (slots.length === 1) {
-        message = `*Neuer Termin am*: \n${slots[0].client_date.replaceAll('-', '\\-')} / ${slots[0].client_time}`;
-    } else {
-        message = '*Neue Termine am:* \n';
-        slots.forEach((slot) => {
-            message += `${slot.client_date.replaceAll('-', '\\-')} / ${slot.client_time}\n`;
-        })
-    }
-    bot.sendMessage(chatId, message, { "parse_mode": "MarkdownV2" });
-}
-
-function futureDate(addDays: number = 28): string {
-    let date = new Date();
-    date.setDate(date.getDate() + addDays);
-    return date.toISOString().slice(0, 10);
-}
-
-init()
+// Start the application
+const app = new SlotFinderApp();
+app.start().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

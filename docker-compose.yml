@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  slot-finder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: simply-book-it-slot-finder
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=PRODUCTION

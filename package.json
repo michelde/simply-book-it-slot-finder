@@ -1,29 +1,43 @@
 {
   "name": "simply-book-it-slot-finder",
   "version": "1.0.0",
-  "description": "Simple script to find a free time slot at simly booking",
-  "main": "index.js",
+  "description": "Automated slot finder for SimplyBook.it booking systems with Telegram notifications",
+  "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js",
-    "start:dev": "npx nodemon"
+    "start:dev": "nodemon",
+    "docker:build": "docker build -t simply-book-it-slot-finder .",
+    "docker:run": "docker run --env-file .env simply-book-it-slot-finder"
   },
-  "keywords": [],
+  "keywords": [
+    "simplybook",
+    "booking",
+    "slot-finder",
+    "telegram",
+    "notification",
+    "scheduler"
+  ],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "devDependencies": {
-    "@types/node": "^20.12.7",
-    "nodemon": "^3.1.0",
-    "rimraf": "^5.0.5",
+    "@types/node": "^25.0.10",
+    "@types/node-cron": "^3.0.11",
+    "@types/node-telegram-bot-api": "^0.64.13",
+    "nodemon": "^3.1.11",
+    "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^0.37.0",
-    "axios": "^1.6.8",
-    "cron-parser": "^4.9.0",
-    "node-cron": "^3.0.3",
-    "node-telegram-bot-api": "^0.65.1"
+    "@dotenvx/dotenvx": "^1.52.0",
+    "axios": "^1.13.2",
+    "node-cron": "^4.2.1",
+    "node-telegram-bot-api": "^0.67.0"
   }
 }

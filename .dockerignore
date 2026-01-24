@@ -1,0 +1,49 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# Build output
+build
+dist
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+
+# Images (not needed in container)
+images
+
+# Development files
+nodemon.json
+
+# Tests
+tests
+*.test.ts
+*.spec.ts
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Logs
+logs
+*.log
