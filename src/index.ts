@@ -2,13 +2,14 @@
  * Simply Book It Slot Finder
  * Main entry point for the application
  */
+
+// Load environment variables FIRST before any other imports
+require('@dotenvx/dotenvx').config();
+
 import cron from 'node-cron';
 import { config } from './config';
 import { BookingService } from './services/bookingService';
 import { NotificationService } from './services/notificationService';
-
-// Load environment variables
-require('@dotenvx/dotenvx').config();
 
 class SlotFinderApp {
   private bookingService: BookingService;
