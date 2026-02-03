@@ -12,6 +12,7 @@ export interface Config {
   telegramChatId?: string;
   provider: string;
   service: string;
+  datesIgnore: string[];
 }
 
 /**
@@ -37,6 +38,28 @@ function validateConfig(): Config {
     throw new Error('DAYSAHEAD must be a number between 1 and 365');
   }
 
+  // Parse and validate DATES_IGNORE
+  const datesIgnoreRaw = process.env.DATES_IGNORE || '';
+  const datesIgnore: string[] = [];
+  
+  if (datesIgnoreRaw.trim()) {
+    const dates = datesIgnoreRaw.split(',').map(d => d.trim()).filter(d => d);
+    
+    // Validate date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    for (const date of dates) {
+      if (!dateRegex.test(date)) {
+        throw new Error(`Invalid date format in DATES_IGNORE: ${date}. Expected format: YYYY-MM-DD`);
+      }
+      // Verify it's a valid date
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error(`Invalid date in DATES_IGNORE: ${date}`);
+      }
+      datesIgnore.push(date);
+    }
+  }
+
   return {
     schedule: process.env.SCHEDULE || '*/30 * * * *',
     nodeEnv: process.env.NODE_ENV || 'development',
@@ -46,6 +69,7 @@ function validateConfig(): Config {
     telegramChatId: process.env.TELEGRAM_CHATID,
     provider: process.env.PROVIDER || '2',
     service: process.env.SERVICE || '2',
+    datesIgnore,
   };
 }
 

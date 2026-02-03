@@ -37,7 +37,12 @@ export class BookingService {
       const response = await axios.get<TimeSlot[]>(url, { params });
       
       // Filter out busy slots
-      const freeSlots = response.data.filter((slot) => slot.type !== 'busy');
+      let freeSlots = response.data.filter((slot) => slot.type !== 'busy');
+      
+      // Filter out ignored dates if configured
+      if (config.datesIgnore.length > 0) {
+        freeSlots = freeSlots.filter((slot) => !config.datesIgnore.includes(slot.date));
+      }
       
       return freeSlots;
     } catch (error) {

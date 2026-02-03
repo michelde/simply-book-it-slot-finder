@@ -182,6 +182,7 @@ docker rm slot-finder
 | `DAYSAHEAD` | No | `28` | Number of days ahead to check (1-365) |
 | `PROVIDER` | No | `2` | Provider ID from booking system |
 | `SERVICE` | No | `2` | Service ID from booking system |
+| `DATES_IGNORE` | No | - | Comma-separated dates to ignore in YYYY-MM-DD format (e.g., `2024-12-25,2024-12-31`) |
 
 ### Schedule Examples
 
